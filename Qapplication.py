@@ -2,7 +2,6 @@ import sys
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import Qt
 
-
 class Main(QtWidgets.QMainWindow):
 
     def __init__(self, parent = None):
@@ -28,6 +27,12 @@ class Main(QtWidgets.QMainWindow):
         self.saveAction.setShortcut("Ctrl+S")
         self.saveAction.triggered.connect(self.save)
 
+        ## Added exit action
+        self.quitAction = QtWidgets.QAction(QtGui.QIcon("icons/exit.png"),"Quit",self)
+        self.quitAction.setStatusTip("Quit Program")
+        self.quitAction.setShortcut("Ctrl+Q")
+        self.quitAction.triggered.connect(self.quit)
+        
         self.cutAction = QtWidgets.QAction(QtGui.QIcon("icons/cut.png"),"Cut to clipboard",self)
         self.cutAction.setStatusTip("Delete and copy text to clipboard")
         self.cutAction.setShortcut("Ctrl+X")
@@ -85,6 +90,15 @@ class Main(QtWidgets.QMainWindow):
     def initFormatbar(self):
         self.formatbar = self.addToolBar("Format")
 
+    def quit(self):
+        """ Exit the program """
+
+        QMessageBox = QtWidgets.QMessageBox
+        if QMessageBox.question(None, '', "Are you sure you want to quit?",
+                                QMessageBox.Yes | QMessageBox.No,
+                                QMessageBox.No) == QMessageBox.Yes:
+            sys.exit(0)
+         
     def initMenubar(self):
         menubar = self.menuBar()
 
@@ -95,6 +109,7 @@ class Main(QtWidgets.QMainWindow):
         file.addAction(self.newAction)
         file.addAction(self.openAction)
         file.addAction(self.saveAction)
+        file.addAction(self.quitAction)     
 
         edit.addAction(self.undoAction)
         edit.addAction(self.redoAction)
@@ -132,12 +147,16 @@ class Main(QtWidgets.QMainWindow):
 
     def save(self):
         if not self.filename:
-            self.filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
+            self.filename, file_filter = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')
+
+        print(self.filename)
         if not self.filename.endswith(".txt"):
             self.filename += ".txt"
 
         with open(self.filename, "wt") as file:
-            file.write(self.text.toHtml())
+            # Need to replace toHtml with toPlainText
+            # otherwise all Qt presentation gets saved!
+            file.write(self.text.toPlainText())
 
     def bulletList(self):
         cursor = self.text.textCursor()
